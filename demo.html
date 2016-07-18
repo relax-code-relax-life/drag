@@ -19,6 +19,11 @@
             border-radius: 5px;
             border: 2px solid #444;
         }
+        .topbottom{
+            position: absolute;
+            right:500px;
+            bottom:0;
+        }
         .drag_handler{
             height: 40px;
             background-color: pink;
@@ -71,7 +76,8 @@
 
 
     <h1>单个触发,未设置handler</h1>
-    <div class="drag_able" ne-plugin="drag.js"  ne-plugin-state="proxy:true;dragStart:start;dragEnd:end;dragActive:active;scroll:false">
+    <div class="drag_able topbottom" ne-plugin="drag.js"
+         ne-plugin-state="proxy:true;dragStart:start;dragEnd:end;dragActive:active;scroll:false;style:right,bottom">
         <div class="drag_handler"></div>
     </div>
 

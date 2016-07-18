@@ -3,15 +3,19 @@
  */
 
 /*ne-plugin-state参数：
- element: {String} 拖动元素的选择器; 默认为当前元素
- container: {String} 拖动的容器的selector;默认为document.documentElement
- handler: {String} 触发拖动的元素的selector，默认为当前元素
- proxy: {bool} 只能是true或false, 是否使用代理拖动效果
- scroll:{bool} 拖动过程中是否允许container滚动. 默认为true. 为false代表禁止滚动
- dragStart: {String} 拖动开始事件的事件名称.
- dragEnd:  {String} 拖动结束事件的名称
- dragActive: {String} 选择到拖动元素触发的事件
+ element: {String} [可选]拖动元素的选择器; 默认为当前元素
+ container: {String} [可选]拖动的容器的selector;默认为document.documentElement
+ handler: {String} [可选]触发拖动的元素的selector，默认为当前元素
+ proxy: {bool} [可选]只能是true或false, 是否使用代理拖动效果
+ scroll:{bool} [可选]拖动过程中是否允许container滚动. 默认为true. 为false代表禁止滚动
+ dragStart: {String} [可选]拖动开始事件的事件名称.
+ dragEnd:  {String} [可选]拖动结束事件的名称
+ dragActive: {String} [可选]选择到拖动元素触发的事件
+
+ special fix param::
+ style:{string} [可选] 用逗号分隔, eg: right,bottom
  */
+
 
 /*事件说明:
  例如设置 dragStart:startEvent;dragEnd:endEvent  ,通过下面的方式监听事件：
@@ -74,7 +78,8 @@ define('%drag_plugin_depends', {
                 setProxyDisplay = null, //显示代理元素 该变量为Function类型
                 execStartEvent = null, // 执行开始拖动事件 该变量为Function类型
                 delta, validDelta,
-                hasHandler = options.handler;
+                hasHandler = options.handler,
+                posProperty = options.posProperty;
 
 
             var getEndOffset = function (delta) {
@@ -121,9 +126,14 @@ define('%drag_plugin_depends', {
                 mouseStartX = e.pageX;
                 mouseStartY = e.pageY;
 
+                //eleOffset: {left,top}
                 if ($currentEle.css('position') == 'fixed') {
                     eleOffset = $currentEle[0].getBoundingClientRect();
+                    eleOffset.right = undefined;
+                    eleOffset.bottom = undefined;
+                    //删除无用属性,防止下面误判.
                 }
+                //eleOffset: {top?,bottom?,left?,right?}
                 else {
                     eleOffset = {
                         left: parseFloat($currentEle.css('left')),
@@ -131,6 +141,7 @@ define('%drag_plugin_depends', {
                         right: parseFloat($currentEle.css('right')),
                         bottom: parseFloat($currentEle.css('bottom'))
                     };
+
 
                     //有可能left,right均未赋值,top,bottom类似
                     if (isNaN(eleOffset.left) && !isNaN(eleOffset.right)) {
@@ -150,8 +161,29 @@ define('%drag_plugin_depends', {
                     for (var key in eleOffset) {
                         eleOffset[key] = eleOffset[key] || 0;
                     }
-
+                    //此时保证 存在一对left|right bottom|top 值, 且为数字类型.
                 }
+
+                //region eleOffset filter
+                //如果上面的if-else可以从取值中判断出样式是否设置了对应的属性值,则可以省略该region代码.
+                //存在该段代码的目的:
+                //  当$currentEle是依据right,bottom定位的,
+                //  则拖动时,应该 同样设置right,bottom定位, 但是getComputedStyle的结果总是有值得.
+                //  其实也可以依照left,top定位,禁用掉bottom和right, 但总觉得这样会存在潜在的问题,且让使用者产生困惑.
+                if (posProperty.right &&
+                    (   eleOffset.right != undefined || !isNaN(eleOffset.right = parseFloat($currentEle.css('right')))
+                    )
+                ) {
+                    eleOffset.left != undefined && delete eleOffset.left;
+                }
+                if (posProperty.bottom &&
+                    (   eleOffset.bottom != undefined || !isNaN(eleOffset.bottom = parseFloat($currentEle.css('bottom')))
+                    )
+                ) {
+                    eleOffset.top != undefined && delete eleOffset.top;
+                }
+                //endregion
+
 
                 eleEndOffset = eleOffset;
 
@@ -317,7 +349,8 @@ define('%drag_plugin_depends', {
          *           options.targetContainer {element|jQueryObj|string_selector}  限定允许拖动的元素的容器. (eg:ele为选择器"div",则container下有多个匹配元素,需要传入该参数限定选中元素的容器)
          *           options.proxy 是否使用拖动代理效果
          *           options.handler {element|jQueryObj|string_selector} 触发拖动的元素
-         *           options.scroll {bool} container原始是否可以滚动. 默认为true. 为false时,在scroll事件中preve
+         *           options.scroll {bool} container是否可以滚动. 默认为true. 为false时,在mousemove事件中preventDefault
+         *           options.posProperty {array} 传入left|right|top|bottom,判断根据哪个属性进行定位, 默认top,left优先.
          *           options.event.dragActive function($dragElement,startOffset) 触发拖动元素时触发(mousedown事件)
          *           options.event.dragStart function($dragElement,startOffSet) 拖动开始事件,返回布尔型的false则取消拖动
          *           options.event.dragEnd function($dragElement,startOffset,endOffset) 拖动结束事件
@@ -374,6 +407,19 @@ define('%drag_plugin_depends', {
 
             options.scroll = options.scroll == null ? true : options.scroll == true;
 
+            //init posProperty
+            var posProperty = options.posProperty;
+            options.posProperty = {};
+            var propertyLimit = ['left', 'right', 'top', 'bottom,'].join(',');
+            if ($.isArray(posProperty)) {
+                $.each(posProperty,function (key) {
+                    if (propertyLimit.indexOf(key + ',') > -1) {
+                        options.posProperty[key] = true;
+                    }
+                });
+            }
+
+
             drag(options);
 
         }
@@ -394,6 +440,9 @@ define(['%drag_plugin_depends'], function (drag) {
         else {
             ele = $root[0];
         }
+
+        state.posProperty = state.style && state.style.split(',');
+
         //state.proxy = state.proxy == 'true';
         state.event = {};
 
