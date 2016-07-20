@@ -129,9 +129,11 @@ define('%drag_plugin_depends', {
                 //eleOffset: {left,top}
                 if ($currentEle.css('position') == 'fixed') {
                     eleOffset = $currentEle[0].getBoundingClientRect();
-                    eleOffset.right = undefined;
-                    eleOffset.bottom = undefined;
-                    //删除无用属性,防止下面误判.
+                    eleOffset={
+                        left:eleOffset.left,
+                        top:eleOffset.top
+                    };
+                    //1.删除无用属性,防止下面误判. 2.将只读ClientRect对象变为普通对象.
                 }
                 //eleOffset: {top?,bottom?,left?,right?}
                 else {
