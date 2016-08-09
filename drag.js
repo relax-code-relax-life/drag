@@ -11,6 +11,7 @@
  dragStart: {String} [可选]拖动开始事件的事件名称.
  dragEnd:  {String} [可选]拖动结束事件的名称
  dragActive: {String} [可选]选择到拖动元素触发的事件
+ dragMove:  {String} [可选]拖动过程中触发的事件
 
  special fix param::
  style:{string} [可选] 用逗号分隔, eg: right,bottom
@@ -237,6 +238,8 @@ define('%drag_plugin_depends', {
                     $moveEle = $currentEle;
                 }
 
+                console.log(eleEndOffset);
+
 
                 //todo 检查 $currentEle 是否具有禁止选中的 事件和样式。
                 //建议在事件中手动添加
@@ -292,6 +295,10 @@ define('%drag_plugin_depends', {
                                 window.event.returnValue = false;
                             }
                         }
+
+                        if(options.event.dragMove){
+                            options.event.dragMove($currentEle,eleOffset,eleEndOffset);
+                        }
                     }
                 });
 
@@ -321,7 +328,7 @@ define('%drag_plugin_depends', {
         function showProxyElement(width, height, $container, zIndex, borderRadius) {
             var $proxyEle = $(proxySelector);
             if (!$proxyEle.length) {
-                $proxyEle = $container.append('<div class="' + proxyClass +
+                $proxyEle = ($container[0]==docEle?$('body'):$container).append('<div class="' + proxyClass +
                     '" style="position:absolute;z-index:20;background:#A0A1A2;opacity:0.6;border-radius:' + (borderRadius || 0) + ';cursor:move"></div>').find(proxySelector);
             }
             $proxyEle.css({
@@ -356,6 +363,7 @@ define('%drag_plugin_depends', {
          *           options.event.dragActive function($dragElement,startOffset) 触发拖动元素时触发(mousedown事件)
          *           options.event.dragStart function($dragElement,startOffSet) 拖动开始事件,返回布尔型的false则取消拖动
          *           options.event.dragEnd function($dragElement,startOffset,endOffset) 拖动结束事件
+         *           options.event.dragMove function($dragElement,startOffset,endOffset) 拖动过程中触发的事件
          *                                  $dragElement 拖动的元素
          *                                  startOffset 开始拖动时的视口坐标(视口：浏览器内容区域窗口)
          *                                  endOffset   结束拖动时的视口坐标
@@ -370,7 +378,7 @@ define('%drag_plugin_depends', {
             if (!eleIsString && $ele.length == 0) return;
 
             options = options || {
-                    container: document.documentElement,
+                    container: docEle,
                     proxy: false,
                     handler: '',
                     event: {}
@@ -404,7 +412,7 @@ define('%drag_plugin_depends', {
             }
 
             //init container
-            options.container = $(options.container || document.documentElement);
+            options.container = $(options.container || docEle);
             options.event = options.event || {};
 
             options.scroll = options.scroll == null ? true : options.scroll == true;
@@ -466,6 +474,13 @@ define(['%drag_plugin_depends'], function (drag) {
             state.event.dragActive = function ($dragElement, startOffset) {
                 $$.emit(state.dragActive, $dragElement, startOffset);
             }
+        }
+
+
+        if(state.dragMove){
+            state.event.dragMove= function ($dragElement,startOffset,endOffset) {
+                $$.emit(state.dragMove,$dragElement,startOffset,endOffset)
+            };
         }
 
 

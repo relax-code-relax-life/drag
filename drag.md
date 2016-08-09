@@ -14,6 +14,7 @@ scroll <<Boolean>> (可选)拖动过程中是否允许container滚动. 默认为
 dragActive <<String>> (可选)选择到拖动元素触发的事件
 dragStart <<String>> (可选)拖动开始事件的事件名称.
 dragEnd  <<String>> (可选)拖动结束事件的名称
+dragMove  <<String>> (可选)拖动过程中触发的事件的名称。(注意:该事件会反复多次触发,所以不要执行费时同步代码以及限制执行的间隔)
 
 ## 事件说明
 例如设置 ne-plugin-state="dragStart:startEvent;dragEnd:endEvent"  ,通过下面的方式监听事件：
