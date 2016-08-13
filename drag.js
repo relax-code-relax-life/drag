@@ -80,7 +80,8 @@ define('%drag_plugin_depends', {
                 execStartEvent = null, // 执行开始拖动事件 该变量为Function类型
                 delta, validDelta,
                 hasHandler = options.handler,
-                posProperty = options.posProperty;
+                posProperty = options.posProperty,
+                isMoved; //标识是否执行了mouseMove事件,如果该元素触发mousedown后,未触发mousemove,则不执行options.event.dragEnd事件
 
 
             var getEndOffset = function (delta) {
@@ -130,9 +131,9 @@ define('%drag_plugin_depends', {
                 //eleOffset: {left,top}
                 if ($currentEle.css('position') == 'fixed') {
                     eleOffset = $currentEle[0].getBoundingClientRect();
-                    eleOffset={
-                        left:eleOffset.left,
-                        top:eleOffset.top
+                    eleOffset = {
+                        left: eleOffset.left,
+                        top: eleOffset.top
                     };
                     //1.删除无用属性,防止下面误判. 2.将只读ClientRect对象变为普通对象.
                 }
@@ -190,18 +191,17 @@ define('%drag_plugin_depends', {
 
                 eleEndOffset = eleOffset;
 
+                isMoved=false;
+                execStartEvent = function () {
+                    if (options.event.dragStart && options.event.dragStart($currentEle, eleOffset) === false) {
+                        $currentEle = null;
+                    }
+                    isMoved = true;
+                    execStartEvent = null;
 
-                if (options.event.dragStart) {
-                    execStartEvent = function () {
-                        if (options.event.dragStart($currentEle, eleOffset) === false) {
-                            $currentEle = null;
-                        }
-                        execStartEvent = null;
+                    return $currentEle;
+                };
 
-
-                        return $currentEle;
-                    };
-                }
 
                 if (options.event.dragActive) {
                     options.event.dragActive($currentEle, eleOffset);
@@ -296,8 +296,8 @@ define('%drag_plugin_depends', {
                             }
                         }
 
-                        if(options.event.dragMove){
-                            options.event.dragMove($currentEle,eleOffset,eleEndOffset);
+                        if (options.event.dragMove) {
+                            options.event.dragMove($currentEle, eleOffset, eleEndOffset);
                         }
                     }
                 });
@@ -313,7 +313,7 @@ define('%drag_plugin_depends', {
                 }
 
 
-                if (options.event.dragEnd) {
+                if ( isMoved && options.event.dragEnd) {
                     options.event.dragEnd($currentEle, eleOffset, eleEndOffset);
                 }
 
@@ -328,7 +328,7 @@ define('%drag_plugin_depends', {
         function showProxyElement(width, height, $container, zIndex, borderRadius) {
             var $proxyEle = $(proxySelector);
             if (!$proxyEle.length) {
-                $proxyEle = ($container[0]==docEle?$('body'):$container).append('<div class="' + proxyClass +
+                $proxyEle = ($container[0] == docEle ? $('body') : $container).append('<div class="' + proxyClass +
                     '" style="position:absolute;z-index:20;background:#A0A1A2;opacity:0.6;border-radius:' + (borderRadius || 0) + ';cursor:move"></div>').find(proxySelector);
             }
             $proxyEle.css({
@@ -422,7 +422,7 @@ define('%drag_plugin_depends', {
             options.posProperty = {};
             var propertyLimit = ['left', 'right', 'top', 'bottom,'].join(',');
             if ($.isArray(posProperty)) {
-                $.each(posProperty,function (key) {
+                $.each(posProperty, function (key) {
                     if (propertyLimit.indexOf(key + ',') > -1) {
                         options.posProperty[key] = true;
                     }
@@ -477,9 +477,9 @@ define(['%drag_plugin_depends'], function (drag) {
         }
 
 
-        if(state.dragMove){
-            state.event.dragMove= function ($dragElement,startOffset,endOffset) {
-                $$.emit(state.dragMove,$dragElement,startOffset,endOffset)
+        if (state.dragMove) {
+            state.event.dragMove = function ($dragElement, startOffset, endOffset) {
+                $$.emit(state.dragMove, $dragElement, startOffset, endOffset)
             };
         }
 
