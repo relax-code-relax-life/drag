@@ -4,7 +4,7 @@
 
 /*ne-plugin-state参数：
  element: {String} [可选]拖动元素的选择器; 默认为当前元素
- container: {String} [可选]拖动的容器的selector;默认为document.documentElement
+ container: {String} [可选]拖动的容器的selector;默认为document.documentElement;传入null,则不限制拖动范围。
  handler: {String} [可选]触发拖动的元素的selector，默认为当前元素
  proxy: {bool} [可选]只能是true或false, 是否使用代理拖动效果
  scroll:{bool} [可选]拖动过程中是否允许container滚动. 默认为true. 为false代表禁止滚动
@@ -64,6 +64,7 @@ define('%drag_plugin_depends', {
                 selector = options.selector,  //拖动元素选择器
                 targetSelector = selector + ' ' + options.handler, //触发拖动的目标元素选择器
                 $container = options.container, //拖动容器
+                isUnLimit=options.unlimit===true, //是否限制拖动范围
                 $tarContainer = options.targetContainer, //允许拖动的元素的容器
                 disableScroll = !options.scroll,//取消$container的scroll事件的.
                 eleOffset, //拖动元素的文档偏移  offset():文档坐标
@@ -207,14 +208,18 @@ define('%drag_plugin_depends', {
                     options.event.dragActive($currentEle, eleOffset);
                 }
 
-                containerBound = $container[0].getBoundingClientRect();
-                eleBound = $currentEle[0].getBoundingClientRect();
-                moveRange = {
-                    left: containerBound.left - eleBound.left,
-                    right: containerBound.right - eleBound.right,
-                    top: containerBound.top - eleBound.top,
-                    bottom: containerBound.bottom - eleBound.bottom
-                };
+                //init moveRange
+
+                if(!isUnLimit){
+                    containerBound = $container[0].getBoundingClientRect();
+                    eleBound = $currentEle[0].getBoundingClientRect();
+                    moveRange = {
+                        left: containerBound.left - eleBound.left,
+                        right: containerBound.right - eleBound.right,
+                        top: containerBound.top - eleBound.top,
+                        bottom: containerBound.bottom - eleBound.bottom
+                    };
+                }
 
 
                 if (isProxy) {
@@ -238,7 +243,7 @@ define('%drag_plugin_depends', {
                     $moveEle = $currentEle;
                 }
 
-                console.log(eleEndOffset);
+                // console.log(eleEndOffset);
 
 
                 //todo 检查 $currentEle 是否具有禁止选中的 事件和样式。
@@ -265,10 +270,15 @@ define('%drag_plugin_depends', {
                         //max 判断左边缘和上边缘
                         //min 判断右边缘和下边缘
                         //  container.left-eleOffset.left(<0) < delta.left < container.right-eleOffset.right(>0)
-                        validDelta = {
-                            left: Math.min(Math.max(moveRange.left, delta.left), moveRange.right),
-                            top: Math.min(Math.max(moveRange.top, delta.top), moveRange.bottom)
-                        };
+                        if(isUnLimit){
+                            validDelta=delta;
+                        }
+                        else{
+                            validDelta = {
+                                left: Math.min(Math.max(moveRange.left, delta.left), moveRange.right),
+                                top: Math.min(Math.max(moveRange.top, delta.top), moveRange.bottom)
+                            };
+                        }
 
                         // eleEndOffset = {
                         //     left: eleOffset.left + validDelta.left,
@@ -354,7 +364,7 @@ define('%drag_plugin_depends', {
         /*
          * @param ele {element|jQueryObj|string_selector} 拖动的元素
          * @param options
-         *           options.container {element|jQueryObj|string_selector} 拖动的容器
+         *           options.container {element|jQueryObj|string_selector} 拖动的容器 传入字符串null,则不限制范围。
          *           options.targetContainer {element|jQueryObj|string_selector}  限定允许拖动的元素的容器. (eg:ele为选择器"div",则container下有多个匹配元素,需要传入该参数限定选中元素的容器)
          *           options.proxy 是否使用拖动代理效果
          *           options.handler {element|jQueryObj|string_selector} 触发拖动的元素
@@ -412,7 +422,14 @@ define('%drag_plugin_depends', {
             }
 
             //init container
-            options.container = $(options.container || docEle);
+            if(options.container==='null'){
+                options.container=$(docEle);
+                options.unlimit=true;
+            }
+            else{
+                options.container = $(options.container || docEle);
+            }
+
             options.event = options.event || {};
 
             options.scroll = options.scroll == null ? true : options.scroll == true;
@@ -443,6 +460,9 @@ define(['%drag_plugin_depends'], function (drag) {
     drag = drag.drag;
 
     this.init = function ($root) {
+
+        //reset : ele,targetContainer,event, 其余的直接传给drag方法。
+
         var ele = state.element;
         if (ele) {
             state.targetContainer = $root;
