@@ -1,7 +1,7 @@
 ## 拖动插件
 拖动支持 absolute、fixed、relative、float ;
 
-拖动支持 left、top、right、bottom 任意组合定位.
+拖动支持 left、top、right、bottom 、margin、translate 任意组合定位.
 
 注意: 拖动不支持 同时设置left和right 或者 同时设置top和bottom 的情况.
 

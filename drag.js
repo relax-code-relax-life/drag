@@ -129,45 +129,41 @@ define('%drag_plugin_depends', {
                 mouseStartX = e.pageX;
                 mouseStartY = e.pageY;
 
-                //eleOffset: {left,top}
-                if ($currentEle.css('position') == 'fixed') {
-                    eleOffset = $currentEle[0].getBoundingClientRect();
-                    eleOffset = {
-                        left: eleOffset.left,
-                        top: eleOffset.top
-                    };
-                    //1.删除无用属性,防止下面误判. 2.将只读ClientRect对象变为普通对象.
-                }
+
+                //删除对fixed定位的特殊处理。因为统一使用计算的css定位,可以有效避免margin和transform:translate造成的偏移。
+
                 //eleOffset: {top?,bottom?,left?,right?}
-                else {
-                    eleOffset = {
-                        left: parseFloat($currentEle.css('left')),
-                        top: parseFloat($currentEle.css('top')),
-                        right: parseFloat($currentEle.css('right')),
-                        bottom: parseFloat($currentEle.css('bottom'))
-                    };
+                eleOffset = {
+                    left: parseFloat($currentEle.css('left')),
+                    top: parseFloat($currentEle.css('top')),
+                    right: parseFloat($currentEle.css('right')),
+                    bottom: parseFloat($currentEle.css('bottom'))
+                };
+
+                console.log(eleOffset);
 
 
-                    //有可能left,right均未赋值,top,bottom类似
-                    if (isNaN(eleOffset.left) && !isNaN(eleOffset.right)) {
-                        delete eleOffset.left;
-                    }
-                    else {
-                        delete eleOffset.right;
-                    }
-
-                    if (isNaN(eleOffset.top) && !isNaN(eleOffset.bottom)) {
-                        delete eleOffset.top;
-                    }
-                    else {
-                        delete eleOffset.bottom;
-                    }
-
-                    for (var key in eleOffset) {
-                        eleOffset[key] = eleOffset[key] || 0;
-                    }
-                    //此时保证 存在一对left|right bottom|top 值, 且为数字类型.
+                //有可能left,right均未赋值,top,bottom类似
+                if (isNaN(eleOffset.left) && !isNaN(eleOffset.right)) {
+                    delete eleOffset.left;
                 }
+                else {
+                    delete eleOffset.right;
+                }
+
+                if (isNaN(eleOffset.top) && !isNaN(eleOffset.bottom)) {
+                    delete eleOffset.top;
+                }
+                else {
+                    delete eleOffset.bottom;
+                }
+
+                for (var key in eleOffset) {
+                    eleOffset[key] = eleOffset[key] || 0;
+                }
+                //此时保证 存在一对left|right bottom|top 值, 且为数字类型.
+
+
 
                 //region eleOffset filter
                 //如果上面的if-else可以从取值中判断出样式是否设置了对应的属性值,则可以省略该region代码.
