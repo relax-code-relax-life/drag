@@ -64,7 +64,7 @@ define('%drag_plugin_depends', {
                 selector = options.selector,  //拖动元素选择器
                 targetSelector = selector + ' ' + options.handler, //触发拖动的目标元素选择器
                 $container = options.container, //拖动容器
-                isUnLimit=options.unlimit===true, //是否限制拖动范围
+                isUnLimit = options.unlimit === true, //是否限制拖动范围
                 $tarContainer = options.targetContainer, //允许拖动的元素的容器
                 disableScroll = !options.scroll,//取消$container的scroll事件的.
                 eleOffset, //拖动元素的文档偏移  offset():文档坐标
@@ -164,7 +164,6 @@ define('%drag_plugin_depends', {
                 //此时保证 存在一对left|right bottom|top 值, 且为数字类型.
 
 
-
                 //region eleOffset filter
                 //如果上面的if-else可以从取值中判断出样式是否设置了对应的属性值,则可以省略该region代码.
                 //存在该段代码的目的:
@@ -188,7 +187,7 @@ define('%drag_plugin_depends', {
 
                 eleEndOffset = eleOffset;
 
-                isMoved=false;
+                isMoved = false;
                 execStartEvent = function () {
                     if (options.event.dragStart && options.event.dragStart($currentEle, eleOffset) === false) {
                         $currentEle = null;
@@ -206,7 +205,7 @@ define('%drag_plugin_depends', {
 
                 //init moveRange
 
-                if(!isUnLimit){
+                if (!isUnLimit) {
                     containerBound = $container[0].getBoundingClientRect();
                     eleBound = $currentEle[0].getBoundingClientRect();
                     moveRange = {
@@ -266,10 +265,10 @@ define('%drag_plugin_depends', {
                         //max 判断左边缘和上边缘
                         //min 判断右边缘和下边缘
                         //  container.left-eleOffset.left(<0) < delta.left < container.right-eleOffset.right(>0)
-                        if(isUnLimit){
-                            validDelta=delta;
+                        if (isUnLimit) {
+                            validDelta = delta;
                         }
-                        else{
+                        else {
                             validDelta = {
                                 left: Math.min(Math.max(moveRange.left, delta.left), moveRange.right),
                                 top: Math.min(Math.max(moveRange.top, delta.top), moveRange.bottom)
@@ -319,7 +318,7 @@ define('%drag_plugin_depends', {
                 }
 
 
-                if ( isMoved && options.event.dragEnd) {
+                if (isMoved && options.event.dragEnd) {
                     options.event.dragEnd($currentEle, eleOffset, eleEndOffset);
                 }
 
@@ -418,11 +417,11 @@ define('%drag_plugin_depends', {
             }
 
             //init container
-            if(options.container==='null'){
-                options.container=$(docEle);
-                options.unlimit=true;
+            if (options.container === 'null') {
+                options.container = $(docEle);
+                options.unlimit = true;
             }
-            else{
+            else {
                 options.container = $(options.container || docEle);
             }
 
@@ -457,7 +456,7 @@ define(['%drag_plugin_depends'], function (drag) {
 
     this.init = function ($root) {
 
-        //reset : ele,targetContainer,event, 其余的直接传给drag方法。
+        //reset : ele,targetContainer,event,posProperty ; 其余的直接传给drag方法。
 
         var ele = state.element;
         if (ele) {
@@ -470,7 +469,11 @@ define(['%drag_plugin_depends'], function (drag) {
         state.posProperty = state.style && state.style.split(',');
 
         //state.proxy = state.proxy == 'true';
-        state.event = {};
+
+        //当$$.plugin方式加载组件时,可以自定义事件回调。
+        if (!state.event) {
+            state.event = {};
+        }
 
         if (state.dragStart) {
             state.event.dragStart = function ($dragElement, startOffSet) {
