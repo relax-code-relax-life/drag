@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        html, body {
+            min-height: 100%;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .drag_able {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            background-color: orange;
+            border-radius: 5px;
+            border: 2px solid #444;
+        }
+
+        .topbottom {
+            /*position: static;*/
+            /*position: absolute;*/
+            /*right:500px;*/
+            /*bottom:0;*/
+
+            position: absolute;
+            margin: 200px 0 0 200px;
+            left: 0;
+            top: 0;
+            position: fixed;
+            transform: translate(50%, 50%);
+        }
+
+        .drag_handler {
+            height: 40px;
+            background-color: pink;
+            cursor: move;
+            margin-top: 30px;
+            position: relative;
+        }
+
+        .log {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 250px;
+            height: 100%;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+
+<h1>单个触发,未设置handler</h1>
+<div class="drag_able topbottom" id="drag1">
+    <div class="drag_handler">drag1</div>
+</div>
+
+<h1>批量触发,设置hanlder</h1>
+<div class="batchWrap" style="width: 500px;height: 300px;background: grey">
+
+    <div class="drag_able" style="float: left">
+        <div class="drag_handler"></div>
+    </div>
+    <div class="drag_able" style="float: left">
+        <div class="drag_handler"></div>
+    </div>
+</div>
+
+<div class="log">
+    <h1>Log</h1>
+    <div id="log">
+
+    </div>
+</div>
+
+<script src="../dist/index.js"></script>
+<script>
+
+    var $= function (s) {
+        return document.querySelector(s)
+    }
+
+    var drag = window.drag.default;
+    drag($('#drag1'))
+
+    drag('.drag_able',{
+        targetContainer:$('.batchWrap'),
+        handler:'.drag_handler',
+        proxy:true,
+        container:'.batchWrap'
+    })
+
+</script>
+
+</body>
+</html>

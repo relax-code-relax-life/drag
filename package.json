@@ -1,0 +1,30 @@
+{
+  "name": "drag",
+  "version": "1.0.10",
+  "description": "drag",
+  "main": "drag.js",
+  "scripts": {
+    "build": "webpack --config webpack.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/w-wl/drag.git"
+  },
+  "keywords": [
+    "drag",
+    "wangwl",
+    "wwl"
+  ],
+  "author": "wangwl (wwl)",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.4",
+    "babel-preset-env": "^1.6.1",
+    "webpack": "^4.5.0"
+  },
+  "dependencies": {
+    "webpack-cli": "^2.0.14",
+    "wwl-dom": "^1.0.7"
+  }
+}
