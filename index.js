@@ -32,10 +32,10 @@ var fixStyleOffset = function (offset) {
      *           options.handler {element|string_selector} 触发拖动的元素
      *           options.scroll {bool} container是否可以滚动. 默认为true. 为false时,在mousemove事件中preventDefault
      *           options.posProperty {array} 传入left|right|top|bottom,判断根据哪个属性进行定位, 默认top,left优先.
-     *           options.event.dragActive function($dragElement,startOffset) 触发拖动元素时触发(mousedown事件)
-     *           options.event.dragStart function($dragElement,startOffSet) 拖动开始事件,返回布尔型的false则取消拖动
-     *           options.event.dragEnd function($dragElement,startOffset,endOffset) 拖动结束事件
-     *           options.event.dragMove function($dragElement,startOffset,endOffset) 拖动过程中触发的事件
+     *           options.event.dragActive function(dragElement,startOffset) 触发拖动元素时触发(mousedown事件)
+     *           options.event.dragStart function(dragElement,startOffSet) 拖动开始事件,返回布尔型的false则取消拖动
+     *           options.event.dragEnd function(dragElement,startOffset,endOffset) 拖动结束事件
+     *           options.event.dragMove function(dragElement,startOffset,endOffset) 拖动过程中触发的事件
      *                                  $dragElement 拖动的元素
      *                                  startOffset 开始拖动时的视口坐标(视口：浏览器内容区域窗口)
      *                                  endOffset   结束拖动时的视口坐标
@@ -210,7 +210,7 @@ function drag(options) {
         isMoved = false;
 
         execStartEvent = function () {
-            if (options.event.dragStart && options.event.dragStart($currentEle, eleOffset) === false) {
+            if (options.event.dragStart && options.event.dragStart($currentEle[0], eleOffset) === false) {
                 $currentEle = null;
             }
             isMoved = true;
@@ -220,7 +220,7 @@ function drag(options) {
         };
 
         if (options.event.dragActive) {
-            options.event.dragActive($currentEle, eleOffset);
+            options.event.dragActive($currentEle[0], eleOffset);
         }
 
 
@@ -311,7 +311,7 @@ function drag(options) {
         }
 
         if (options.event.dragMove) {
-            options.event.dragMove($currentEle, eleOffset, eleEndOffset);
+            options.event.dragMove($currentEle[0], eleOffset, eleEndOffset);
         }
 
     };
@@ -326,7 +326,7 @@ function drag(options) {
         }
 
         if (isMoved && options.event.dragEnd) {
-            options.event.dragEnd($currentEle, eleOffset, eleEndOffset);
+            options.event.dragEnd($currentEle[0], eleOffset, eleEndOffset);
         }
 
         $currentEle = null;
