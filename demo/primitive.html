@@ -79,22 +79,29 @@
     </div>
 </div>
 
+
+<button id="btnDispose2">dispose2</button>
 <script src="../dist/index.js"></script>
 <script>
 
-    var $= function (s) {
+    var $ = function (s) {
         return document.querySelector(s)
     }
 
     var drag = window.drag.default;
-    drag($('#drag1'))
+    var dispose1 = drag($('#drag1'))
 
-    drag('.drag_able',{
-        targetContainer:$('.batchWrap'),
-        handler:'.drag_handler',
-        proxy:true,
-        container:'.batchWrap'
-    })
+    var dispose2 = drag('.drag_able', {
+        targetContainer: $('.batchWrap'),
+        handler: '.drag_handler',
+        proxy: true,
+        // container: '.batchWrap'
+    });
+
+
+    $('#btnDispose2').onclick= function () {
+        dispose2();
+    }
 
 </script>
 

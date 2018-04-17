@@ -1,6 +1,6 @@
 {
-  "name": "drag",
-  "version": "1.0.10",
+  "name": "wwl-drag",
+  "version": "1.0.11",
   "description": "drag",
   "main": "drag.js",
   "scripts": {
@@ -25,6 +25,6 @@
   },
   "dependencies": {
     "webpack-cli": "^2.0.14",
-    "wwl-dom": "^1.0.7"
+    "wwl-dom": "^1.0.10"
   }
 }

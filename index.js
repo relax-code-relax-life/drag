@@ -15,10 +15,10 @@ var fixPageXandPageY = function (e) {
     e.pageY = e.clientY + (body.scrollTop || docEle.scrollTop);
 };
 
-var fixStyleOffset= function (offset) {
-    var obj={};
-    for(var key in offset){
-        obj[key]=offset[key]+'px';
+var fixStyleOffset = function (offset) {
+    var obj = {};
+    for (var key in offset) {
+        obj[key] = offset[key] + 'px';
     }
     return obj;
 }
@@ -112,7 +112,7 @@ export default function (ele, options) {
     }
 
 
-    drag(options);
+    return drag(options);
 
 };
 
@@ -159,185 +159,189 @@ function drag(options) {
         return result;
     };
 
-    //todo mousemove 写在window里
-    $container
-        .onDelegate('mousedown', targetSelector, (e) => {
+    var onMousedown = function (e) {
 
-            console.log('moduledown');
+        console.log('moduledown');
 
-            //1.delegate触发的有可能是拖动元素的子元素,
-            //2.handler元素
-            $currentEle = $(e.target).closest(selector);
+        //1.delegate触发的有可能是拖动元素的子元素,
+        //2.handler元素
+        $currentEle = $(e.target).closest(selector);
 
-            if ($tarContainer && !$tarContainer.find(selector).includes($currentEle[0])) {
-                $currentEle = null;
-                return;
-            }
-
-
-            !e.pageX && fixPageXandPageY(e);
-            mouseStartX = e.pageX;
-            mouseStartY = e.pageY;
-
-            //删除对fixed定位的特殊处理。因为统一使用计算的css定位,可以有效避免margin和transform:translate造成的偏移。
-            var computeStyle = $currentEle.computeStyle();
-            eleOffset = {
-                left: parseFloat(computeStyle.left),
-                top: parseFloat(computeStyle.top),
-                right: parseFloat(computeStyle.right),
-                bottom: parseFloat(computeStyle.bottom)
-            }
-
-
-            // console.log(eleOffset);
-
-            // 默认根据left,top定位。
-            //  其实也可以全部依照left,top定位,禁用掉bottom和right, 但总觉得这样会存在潜在的问题,且让使用者产生困惑.
-
-            if (posProperty.right && !isNaN(eleOffset.right)) {
-                delete eleOffset.left;
-            }
-            else {
-                delete eleOffset.right;
-            }
-            if (posProperty.bottom && !isNaN(eleOffset.bottom)) {
-                delete eleOffset.top
-            }
-            else {
-                delete eleOffset.bottom;
-            }
-
-            eleEndOffset = eleOffset;
-
-            isMoved = false;
-
-            execStartEvent = function () {
-                if (options.event.dragStart && options.event.dragStart($currentEle, eleOffset) === false) {
-                    $currentEle = null;
-                }
-                isMoved = true;
-                execStartEvent = null;
-
-                return $currentEle;
-            };
-
-            if (options.event.dragActive) {
-                options.event.dragActive($currentEle, eleOffset);
-            }
-
-
-            if (!isUnLimit) {
-                let containerBound = $container[0].getBoundingClientRect();
-                let eleBound = $currentEle[0].getBoundingClientRect();
-                moveRange = {
-                    left: containerBound.left - eleBound.left,
-                    right: containerBound.right - eleBound.right,
-                    top: containerBound.top - eleBound.top,
-                    bottom: containerBound.bottom - eleBound.bottom
-                };
-            }
-
-            if (isProxy) {
-
-                proxyEleOffset = $currentEle.offset();
-                let currentEleComputeStyle = $currentEle.computeStyle();
-                $moveEle = getProxyElement(
-                    $currentEle.offsetWidth(),
-                    $currentEle.offsetHeight(),
-                    $container,
-                    +currentEleComputeStyle.zIndex,
-                    currentEleComputeStyle.borderRadius
-                );
-
-                setProxyDisplay = function () {
-                    $moveEle.style('display', 'block');
-                    setProxyDisplay = null;
-                }
-
-            }
-            else {
-                $moveEle = $currentEle
-            }
-
-            //todo 检查 $currentEle 是否具有禁止选中的 事件和样式。
-            //建议在事件中手动添加
-
-        })
-        .on('mousemove', (e) => {
-            if (!$currentEle) return;
-
-            if (execStartEvent && execStartEvent() === null) return;
-
-            !e.pageX && fixPageXandPageY(e);
-            delta = {
-                top: e.pageY - mouseStartY,
-                left: e.pageX - mouseStartX
-            };
-
-            //max 判断左边缘和上边缘
-            //min 判断右边缘和下边缘
-            //  container.left-eleOffset.left(<0) < delta.left < container.right-eleOffset.right(>0)
-            if (isUnLimit) {
-                validDelta = delta
-            }
-            else {
-                validDelta = {
-                    left: Math.min(Math.max(moveRange.left, delta.left), moveRange.right),
-                    top: Math.min(Math.max(moveRange.top, delta.top), moveRange.bottom)
-                };
-            }
-
-            eleEndOffset = getEndOffset(validDelta);
-
-            // console.log('endOffset:', eleEndOffset);
-
-            if (isProxy) {
-                // debugger;
-                proxyEleEndOffset = {
-                    left: proxyEleOffset.left + validDelta.left,
-                    top: proxyEleOffset.top + validDelta.top
-                };
-                setProxyDisplay && setProxyDisplay();
-                console.log(fixStyleOffset(proxyEleEndOffset));
-                $moveEle.style(fixStyleOffset(proxyEleEndOffset));
-            }
-            else {
-                $moveEle.style(fixStyleOffset(eleEndOffset));
-            }
-
-            if (disableScroll) {
-                if (e) e.preventDefault();
-                else {
-                    window.event.returnValue = false;
-                }
-            }
-
-            if (options.event.dragMove) {
-                options.event.dragMove($currentEle, eleOffset, eleEndOffset);
-            }
-
-        });
-
-    $(window)
-        .on('mouseup', (e) => {
-            if (!$currentEle) {
-                return;
-            }
-
-            if (isProxy) {
-                hideProxyElement();
-                $currentEle.style(fixStyleOffset(eleEndOffset));
-            }
-
-            if (isMoved && options.event.dragEnd) {
-                options.event.dragEnd($currentEle, eleOffset, eleEndOffset);
-            }
-
+        if ($tarContainer && !$tarContainer.find(selector).includes($currentEle[0])) {
             $currentEle = null;
+            return;
+        }
 
-        });
+
+        !e.pageX && fixPageXandPageY(e);
+        mouseStartX = e.pageX;
+        mouseStartY = e.pageY;
+
+        //删除对fixed定位的特殊处理。因为统一使用计算的css定位,可以有效避免margin和transform:translate造成的偏移。
+        var computeStyle = $currentEle.computeStyle();
+        eleOffset = {
+            left: parseFloat(computeStyle.left),
+            top: parseFloat(computeStyle.top),
+            right: parseFloat(computeStyle.right),
+            bottom: parseFloat(computeStyle.bottom)
+        }
 
 
+        // console.log(eleOffset);
+
+        // 默认根据left,top定位。
+        //  其实也可以全部依照left,top定位,禁用掉bottom和right, 但总觉得这样会存在潜在的问题,且让使用者产生困惑.
+
+        if (posProperty.right && !isNaN(eleOffset.right)) {
+            delete eleOffset.left;
+        }
+        else {
+            delete eleOffset.right;
+        }
+        if (posProperty.bottom && !isNaN(eleOffset.bottom)) {
+            delete eleOffset.top
+        }
+        else {
+            delete eleOffset.bottom;
+        }
+
+        eleEndOffset = eleOffset;
+
+        isMoved = false;
+
+        execStartEvent = function () {
+            if (options.event.dragStart && options.event.dragStart($currentEle, eleOffset) === false) {
+                $currentEle = null;
+            }
+            isMoved = true;
+            execStartEvent = null;
+
+            return $currentEle;
+        };
+
+        if (options.event.dragActive) {
+            options.event.dragActive($currentEle, eleOffset);
+        }
+
+
+        if (!isUnLimit) {
+            let containerBound = $container[0].getBoundingClientRect();
+            let eleBound = $currentEle[0].getBoundingClientRect();
+            moveRange = {
+                left: containerBound.left - eleBound.left,
+                right: containerBound.right - eleBound.right,
+                top: containerBound.top - eleBound.top,
+                bottom: containerBound.bottom - eleBound.bottom
+            };
+        }
+
+        if (isProxy) {
+
+            proxyEleOffset = $currentEle.offset();
+            let currentEleComputeStyle = $currentEle.computeStyle();
+            $moveEle = getProxyElement(
+                $currentEle.offsetWidth(),
+                $currentEle.offsetHeight(),
+                $container,
+                +currentEleComputeStyle.zIndex,
+                currentEleComputeStyle.borderRadius
+            );
+
+            setProxyDisplay = function () {
+                $moveEle.style('display', 'block');
+                setProxyDisplay = null;
+            }
+
+        }
+        else {
+            $moveEle = $currentEle
+        }
+
+        //todo 检查 $currentEle 是否具有禁止选中的 事件和样式。
+        //建议在事件中手动添加
+
+    };
+    var onMousemove = function (e) {
+        if (!$currentEle) return;
+
+        if (execStartEvent && execStartEvent() === null) return;
+
+        !e.pageX && fixPageXandPageY(e);
+        delta = {
+            top: e.pageY - mouseStartY,
+            left: e.pageX - mouseStartX
+        };
+
+        //max 判断左边缘和上边缘
+        //min 判断右边缘和下边缘
+        //  container.left-eleOffset.left(<0) < delta.left < container.right-eleOffset.right(>0)
+        if (isUnLimit) {
+            validDelta = delta
+        }
+        else {
+            validDelta = {
+                left: Math.min(Math.max(moveRange.left, delta.left), moveRange.right),
+                top: Math.min(Math.max(moveRange.top, delta.top), moveRange.bottom)
+            };
+        }
+
+        eleEndOffset = getEndOffset(validDelta);
+
+        // console.log('endOffset:', eleEndOffset);
+
+        if (isProxy) {
+            // debugger;
+            proxyEleEndOffset = {
+                left: proxyEleOffset.left + validDelta.left,
+                top: proxyEleOffset.top + validDelta.top
+            };
+            setProxyDisplay && setProxyDisplay();
+            console.log(fixStyleOffset(proxyEleEndOffset));
+            $moveEle.style(fixStyleOffset(proxyEleEndOffset));
+        }
+        else {
+            $moveEle.style(fixStyleOffset(eleEndOffset));
+        }
+
+        if (disableScroll) {
+            if (e) e.preventDefault();
+            else {
+                window.event.returnValue = false;
+            }
+        }
+
+        if (options.event.dragMove) {
+            options.event.dragMove($currentEle, eleOffset, eleEndOffset);
+        }
+
+    };
+    var onMouseup = function (e) {
+        if (!$currentEle) {
+            return;
+        }
+
+        if (isProxy) {
+            hideProxyElement();
+            $currentEle.style(fixStyleOffset(eleEndOffset));
+        }
+
+        if (isMoved && options.event.dragEnd) {
+            options.event.dragEnd($currentEle, eleOffset, eleEndOffset);
+        }
+
+        $currentEle = null;
+
+    };
+
+
+    // debugger;
+    //todo mousemove 写在window里
+    $container.onDelegate('mousedown', targetSelector, onMousedown)
+        .on('mousemove', onMousemove);
+    // debugger;
+    $(window).on('mouseup', onMouseup);
+
+    // debugger;
     var proxyClass = 'dragProxy__';
     var proxySelector = '.' + proxyClass;
 
@@ -363,4 +367,19 @@ function drag(options) {
         $(proxySelector).style('display', 'none');
     }
 
+    function dragDispose() {
+        try {
+            $container
+                .offDelegate('mousedown', targetSelector, onMousedown)
+                .off('mousemove', onMousemove);
+            $(window).off('mouseup', onMouseup);
+            dragDispose = function () {
+            };
+        }
+        catch (e) {
+
+        }
+    }
+
+    return dragDispose;
 }

@@ -6,33 +6,33 @@
 
 // const webpack = require('webpack');
 
+
+var isDev = false;
+
 module.exports = {
-    mode: 'production',
+    mode: isDev ? 'none' : 'production',
     entry: {
         main: './index.js'
     },
     output: {
         filename: 'index.js',
         path: __dirname + '/dist',
-
         library: 'drag',
         libraryTarget: 'umd',
         umdNamedDefine: false
     },
-    watch:false,
+    watch: isDev,
     module: {
-        rules: [
-            {
-                test: /\.js$/,
-                exclude: /(node_modules|bower_components)/,
-                use: {
-                    loader: 'babel-loader',
-                    options: {
-                        presets: ['env']
-                    }
+        rules: [{
+            test: /\.js$/,
+            exclude: /(node_modules|bower_components)/,
+            use: {
+                loader: 'babel-loader',
+                options: {
+                    presets: ['env']
                 }
             }
-        ]
+        }]
     },
     plugins: []
 }
