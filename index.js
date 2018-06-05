@@ -3,6 +3,10 @@ import $ from 'wwl-dom';
 
 // var $=window.$;
 
+//todo
+// 手势
+// border-box和content-box的判断，会触发滚动条
+
 var docEle = document.documentElement;
 var body = document.body;
 
@@ -30,7 +34,7 @@ var fixStyleOffset = function (offset) {
      *           options.targetContainer {element|string_selector}  限定允许拖动的元素的容器. (eg:ele为选择器"div",则container下有多个匹配元素,需要传入该参数限定选中元素的容器)
      *           options.proxy 是否使用拖动代理效果
      *           options.handler {element|string_selector} 触发拖动的元素
-     *           options.scroll {bool} container是否可以滚动. 默认为true. 为false时,在mousemove事件中preventDefault
+     *           options.scroll {bool} container是否可以滚动. 默认为false. 为false时,在mousemove事件中preventDefault
      *           options.posProperty {array} 传入left|right|top|bottom,判断根据哪个属性进行定位, 默认top,left优先.
      *           options.event.dragActive function(dragElement,startOffset) 触发拖动元素时触发(mousedown事件)
      *           options.event.dragStart function(dragElement,startOffSet) 拖动开始事件,返回布尔型的false则取消拖动
@@ -40,9 +44,6 @@ var fixStyleOffset = function (offset) {
      *                                  startOffset 开始拖动时的视口坐标(视口：浏览器内容区域窗口)
      *                                  endOffset   结束拖动时的视口坐标
      * */
-
-// export default
-// 不使用export ， 当umd打包在全局window上使用时，入口点为drag.default
 export default function (ele, options) {
     if (!ele) return;
 
@@ -53,7 +54,8 @@ export default function (ele, options) {
     if (!eleIsString && $ele.length === 0) return;
 
     options = options || {
-        container: docEle,
+        // container: docEle,
+        container: body,
         proxy: false,
         handler: '',
         event: {}
@@ -70,7 +72,7 @@ export default function (ele, options) {
         options.selector = ele;
     }
     else {
-        var flagClass = 'elementDrag_' + getGUID();
+        var flagClass = '_elementDrag_' + getGUID();
         $ele.addClass(flagClass);
         options.selector = '.' + flagClass;
     }
@@ -81,23 +83,25 @@ export default function (ele, options) {
     if (typeof options.handler !== 'string') {
         $handler = $(options.handler);
         if ($handler.length) {
-            $handler.addClass('elementDragHandler_');
-            options.handler = '.elementDragHandler_';
+            $handler.addClass('_elementDragHandler_');
+            options.handler = '._elementDragHandler_';
         }
     }
 
     //init container
     if (options.container === 'null') {
-        options.container = $(docEle);
+        // options.container = $(docEle);
+        options.container = $(body);
         options.unlimit = true;
     }
     else {
-        options.container = $(options.container || docEle);
+        // options.container = $(options.container || docEle);
+        options.container = $(options.container || body);
     }
 
     options.event = options.event || {};
 
-    options.scroll = options.scroll == null ? true : options.scroll == true;
+    options.scroll = options.scroll == null ? false : options.scroll == true;
 
     //init posProperty
     var posProperty = options.posProperty;
@@ -141,6 +145,7 @@ function drag(options) {
         posProperty = options.posProperty,
         isMoved; //标识是否执行了mouseMove事件,如果该元素触发mousedown后,未触发mousemove,则不执行options.event.dragEnd事件
 
+    // console.log(isUnLimit);
 
     var getEndOffset = function (delta) {
         var result = {};
@@ -160,8 +165,6 @@ function drag(options) {
     };
 
     var onMousedown = function (e) {
-
-        console.log('moduledown');
 
         //1.delegate触发的有可能是拖动元素的子元素,
         //2.handler元素
@@ -227,11 +230,21 @@ function drag(options) {
         if (!isUnLimit) {
             let containerBound = $container[0].getBoundingClientRect();
             let eleBound = $currentEle[0].getBoundingClientRect();
+            let containerStyle = $container.computeStyle();
+            let containerBorder = [
+                containerStyle.borderTopWidth,
+                containerStyle.borderRightWidth,
+                containerStyle.borderBottomWidth,
+                containerStyle.borderLeftWidth
+            ].map(val => parseInt(val));
+            // console.log(containerBound)
+            // console.log(eleBound)
+            // console.log(containerBorder)
             moveRange = {
-                left: containerBound.left - eleBound.left,
-                right: containerBound.right - eleBound.right,
-                top: containerBound.top - eleBound.top,
-                bottom: containerBound.bottom - eleBound.bottom
+                left: containerBound.left - eleBound.left + containerBorder[3],
+                right: containerBound.right - eleBound.right - containerBorder[1],
+                top: containerBound.top - eleBound.top + containerBorder[0],
+                bottom: containerBound.bottom - eleBound.bottom - containerBorder[2]
             };
         }
 
@@ -279,10 +292,12 @@ function drag(options) {
             validDelta = delta
         }
         else {
+
             validDelta = {
                 left: Math.min(Math.max(moveRange.left, delta.left), moveRange.right),
                 top: Math.min(Math.max(moveRange.top, delta.top), moveRange.bottom)
             };
+            // console.log('check delta range', validDelta);
         }
 
         eleEndOffset = getEndOffset(validDelta);
@@ -296,7 +311,7 @@ function drag(options) {
                 top: proxyEleOffset.top + validDelta.top
             };
             setProxyDisplay && setProxyDisplay();
-            console.log(fixStyleOffset(proxyEleEndOffset));
+            // console.log(fixStyleOffset(proxyEleEndOffset));
             $moveEle.style(fixStyleOffset(proxyEleEndOffset));
         }
         else {
@@ -383,3 +398,4 @@ function drag(options) {
 
     return dragDispose;
 }
+

@@ -6,22 +6,23 @@
 
 // const webpack = require('webpack');
 
-
-var isDev = false;
+var isWatch = false;
+var isMini = true;
 
 module.exports = {
-    mode: isDev ? 'none' : 'production',
+    mode: isMini ? 'production' : 'none',
     entry: {
-        main: './index.js'
+        'dist/index': './index.js',
+        'demo/drag': './index.js'
     },
     output: {
-        filename: 'index.js',
-        path: __dirname + '/dist',
+        filename: '[name].js',
+        path: __dirname,
         library: 'drag',
         libraryTarget: 'umd',
-        umdNamedDefine: false
+        // umdNamedDefine: false
     },
-    watch: isDev,
+    watch: isWatch,
     module: {
         rules: [{
             test: /\.js$/,
@@ -29,7 +30,8 @@ module.exports = {
             use: {
                 loader: 'babel-loader',
                 options: {
-                    presets: ['env']
+                    presets: ['env'],
+                    plugins: ["add-module-exports"]
                 }
             }
         }]

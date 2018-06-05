@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        html, body {
+            min-height: 100%;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+
+            height: 200%;
+        }
+
+        .drag_able {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            background-color: orange;
+            border-radius: 5px;
+            border: 2px solid #444;
+        }
+
+        .drag_handler {
+            height: 40px;
+            background-color: pink;
+            margin-top: 30px;
+            position: relative;
+        }
+
+        #drag1, .drag_handler {
+            cursor: move;
+        }
+
+        #container3, #container4 {
+            width: 500px;
+            height: 300px;
+            overflow: auto;
+            border: 1px solid #000;
+            box-sizing: content-box;
+        }
+
+        textarea {
+            width: 500px;
+            height: 420px;
+            overflow: hidden;
+            border: none;
+            outline: none;
+        }
+
+    </style>
+</head>
+<body>
+<div id="root">
+    <h1>单个触发</h1>
+    <div class="drag_able" id="drag1">drag1</div>
+
+    <h1>批量触发</h1>
+    <div id="container2" style="overflow: hidden">
+        <div class="drag_able" style="float: left">
+            <div class="drag_handler"></div>
+        </div>
+        <div class="drag_able" style="float: left">
+            <div class="drag_handler"></div>
+        </div>
+    </div>
+
+    <h1>设置container</h1>
+    <div id="container3">
+        <div class="drag_able"></div>
+    </div>
+
+    <h1>不设置container</h1>
+    <div id="container4">
+        <div class="drag_able"></div>
+    </div>
+
+    <h1>绑定事件</h1>
+    <div id="container5">
+        <div class="drag_able"></div>
+    </div>
+
+</div>
+
+<pre>
+//html:
+    <textarea readonly></textarea>
+
+//js:
+
+    //单个触发
+    var dispose1 = drag('#drag1');
+
+    //批量触发
+    var dispose2 = drag('.drag_able', {
+        targetContainer: '#container1',
+        handler: '.drag_handler',
+        proxy: true,
+    });
+
+     //设置container
+    var dispose3 = drag('.drag_able', {
+        container:'#container2'
+    });
+
+    //不设置container
+    var dispose4 = drag('.drag_able', {
+        targetContainer:'#container4',
+        container:'null'        //默认container为body,传入字符串null代表无container
+    });
+
+    //事件绑定
+    var dispose5 = drag('.drag_able', {
+        targetContainer: '#container5',
+        event: {
+            dragActive: function (node, start) {
+                console.log('dragActive', node, start)
+            },
+            dragStart: function (node, start) {
+                console.log('dragStart', node, start)
+            },
+            dragMove: function (node, start, end) {
+                console.log('dragMove', node, start, end)
+            },
+            dragEnd: function (node, start, end) {
+                console.log('dragEnd', node, start, end)
+            },
+
+        }
+    });
+
+
+
+</pre>
+
+<script src="./drag.js"></script>
+<script>
+
+    var drag = window.drag;
+
+    var dispose1 = drag('#drag1')
+
+    var dispose2 = drag('.drag_able', {
+        targetContainer: '#container1',
+        handler: '.drag_handler',
+        proxy: true,
+    });
+
+    var dispose3 = drag('.drag_able', {
+        container: '#container3'
+    });
+
+    var dispose4 = drag('.drag_able', {
+        targetContainer: '#container4',
+        container: 'null'
+    });
+
+    var dispose5 = drag('.drag_able', {
+        targetContainer: '#container5',
+        event: {
+            dragActive: function (node, start) {
+                console.log('dragActive', node, start)
+            },
+            dragStart: function (node, start) {
+                console.log('dragStart', node, start)
+            },
+            dragMove: function (node, start, end) {
+                console.log('dragMove', node, start, end)
+            },
+            dragEnd: function (node, start, end) {
+                console.log('dragEnd', node, start, end)
+            },
+
+        }
+    });
+
+</script>
+
+<script>
+    document.getElementsByTagName('textarea')[0].value = window.root.innerHTML.replace(/^\s*(\r|\n)/, '');
+</script>
+
+
+</body>
+</html>
