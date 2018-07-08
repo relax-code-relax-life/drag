@@ -13,7 +13,7 @@ module.exports = {
     mode: isMini ? 'production' : 'none',
     entry: {
         'dist/index': './index.js',
-        'demo/drag': './index.js'
+        'demo/index': './index.js'
     },
     output: {
         filename: '[name].js',

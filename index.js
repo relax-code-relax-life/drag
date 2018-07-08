@@ -58,14 +58,15 @@ export default function (ele, options) {
         container: body,
         proxy: false,
         handler: '',
-        event: {}
+        event: {},
+
     };
 
-    if (options.targetContainer) {
-        options.targetContainer = $(options.targetContainer);
-        if (options.targetContainer.length === 0) {
-            options.targetContainer = null;
-        }
+    var targetContainer = options.targetContainer;
+    if (typeof targetContainer === 'string') targetContainer = targetContainer.trim();
+    if (targetContainer) {
+        options.targetContainer = $(targetContainer);
+        options.checkTargetContainer = true;
     }
 
     if (eleIsString) {
@@ -126,6 +127,7 @@ function drag(options) {
         targetSelector = selector + ' ' + options.handler, //触发拖动的目标元素选择器
         $container = options.container, //拖动容器
         isUnLimit = options.unlimit === true, //是否限制拖动范围
+        checkTarContainer = options.checkTargetContainer,
         $tarContainer = options.targetContainer, //允许拖动的元素的容器
         disableScroll = !options.scroll,//取消$container的scroll事件的.
         eleOffset, //拖动元素的文档偏移  offset():文档坐标
@@ -170,11 +172,10 @@ function drag(options) {
         //2.handler元素
         $currentEle = $(e.target).closest(selector);
 
-        if ($tarContainer && !$tarContainer.find(selector).includes($currentEle[0])) {
+        if (checkTarContainer && !$tarContainer.find(selector).includes($currentEle[0])) {
             $currentEle = null;
             return;
         }
-
 
         !e.pageX && fixPageXandPageY(e);
         mouseStartX = e.pageX;

@@ -58,7 +58,7 @@
     <div class="drag_able" id="drag1">drag1</div>
 
     <h1>批量触发</h1>
-    <div id="container2" style="overflow: hidden">
+    <div id="container2" style="height: 100px;">
         <div class="drag_able" style="float: left">
             <div class="drag_handler"></div>
         </div>
@@ -95,7 +95,7 @@
 
     //批量触发
     var dispose2 = drag('.drag_able', {
-        targetContainer: '#container1',
+        targetContainer: '#container2',
         handler: '.drag_handler',
         proxy: true,
     });
@@ -135,15 +135,15 @@
 
 </pre>
 
-<script src="./drag.js"></script>
+<script src="./index.js"></script>
 <script>
 
     var drag = window.drag;
 
-    var dispose1 = drag('#drag1')
+    // var dispose1 = drag('#drag1')
 
     var dispose2 = drag('.drag_able', {
-        targetContainer: '#container1',
+        targetContainer: '#container2',
         handler: '.drag_handler',
         proxy: true,
     });
