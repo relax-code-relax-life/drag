@@ -1,6 +1,6 @@
 {
   "name": "wwl-drag",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "drag",
   "main": "drag.js",
   "scripts": {
