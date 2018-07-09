@@ -7,14 +7,14 @@
 # 下载
 
 - npm: `npm install -S wwl-drag`
-- 直接下载: `http://wangwl.net/static/demo/wwl-drag/drag.js` 
+- 直接下载: `http://wangwl.net/static/demo/wwl-drag/index.js`
 
 # 使用
 
 - es2015: `import drag from 'wwl-drag'`
 - commonjs: `var drag = require('wwl-drag')`
 - amd: `define(['./wwl-drag'],function(drag){ /*...*/ })`
-- window.drag: `<script src="http://wangwl.net/static/demo/wwl-drag/drag.js"></script>` 
+- window.drag: `<script src="http://wangwl.net/static/demo/wwl-drag/index.js"></script>` 
 
 # 示例1
 ```javascript
