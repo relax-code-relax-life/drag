@@ -24,7 +24,7 @@
 ```
 
 # demo
-[http://wangwl.net/static/demo/wwl-drag/demo.html](http://wangwl.net/static/demo/drag/demo.html)
+[http://wangwl.net/static/demo/wwl-drag/demo.html](http://wangwl.net/static/demo/wwl-drag/demo.html)
 
 # 函数签名
 
